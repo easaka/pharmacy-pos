@@ -9,10 +9,45 @@ use App\Models\Supplier;
 
 class ProductWebController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $products = Product::with('category','supplier')->paginate(15);
-        return view('products.index', compact('products'));
+        $query = Product::with('category', 'supplier');
+
+        // Search functionality
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('sku', 'like', "%{$search}%")
+                  ->orWhere('description', 'like', "%{$search}%")
+                  ->orWhereHas('category', function ($q) use ($search) {
+                      $q->where('name', 'like', "%{$search}%");
+                  })
+                  ->orWhereHas('supplier', function ($q) use ($search) {
+                      $q->where('name', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        // Category filter
+        if ($request->filled('category')) {
+            $query->where('category_id', $request->category);
+        }
+
+        // Sort
+        $sortBy = $request->get('sort_by', 'name');
+        $sortOrder = $request->get('sort_order', 'asc');
+        
+        if (in_array($sortBy, ['name', 'sku', 'selling_price', 'created_at'])) {
+            $query->orderBy($sortBy, $sortOrder);
+        } else {
+            $query->orderBy('name', 'asc');
+        }
+
+        $products = $query->paginate(20)->withQueryString();
+        $categories = Category::all();
+
+        return view('products.index', compact('products', 'categories'));
     }
 
     public function create()

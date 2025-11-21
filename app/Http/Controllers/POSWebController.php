@@ -7,7 +7,7 @@ use App\Models\Product;
 use App\Models\Sale;
 use App\Models\SaleItem;
 use App\Models\StockEntry;
-use DB;
+use Illuminate\Support\Facades\DB;
 
 class POSWebController extends Controller
 {

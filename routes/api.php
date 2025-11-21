@@ -14,9 +14,11 @@ Route::middleware('auth:sanctum')->group(function(){
     Route::get('reports/expiry-soon', [ReportController::class,'expirySoon']);
 });
 
-// Public routes
-Route::post('/register', [AuthController::class, 'register']);
+// Public routes - Login only
 Route::post('/login', [AuthController::class, 'login']);
+
+// Registration restricted to admin only - should be done via web interface
+// Route::post('/register', [AuthController::class, 'register']); // Removed - only admin can register via web
 
 // Protected routes
 Route::middleware('auth:sanctum')->group(function () {

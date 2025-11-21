@@ -11,7 +11,7 @@ use App\Models\Purchase;      // optional: create if you don't have it
 use App\Models\PurchaseItem;  // optional: create if you don't have it
 use Illuminate\Support\Facades\DB;
 use Spatie\SimpleExcel\SimpleExcelWriter;
-use PDF; // barryvdh/laravel-dompdf
+use Barryvdh\DomPDF\Facade\Pdf as PDF;
 
 class ReportController extends Controller
 {
@@ -118,17 +118,28 @@ class ReportController extends Controller
     {
         [$start,$end] = $this->parseRange($request);
 
-        if (!class_exists(Purchase::class)) {
-            // If Purchase model missing, return empty view with note
+        // Check if purchases table exists
+        try {
+            if (!class_exists(Purchase::class)) {
+                throw new \Exception('Purchase model not found');
+            }
+            
+            // Test if table exists by making a simple query
+            Purchase::count();
+            
+        } catch (\Exception $e) {
+            // If Purchase model or table doesn't exist, return empty view
             return view('reports.purchases', [
                 'purchases' => collect(),
                 'total' => 0,
                 'labels' => [],
                 'data' => [],
-                'start'=>$start,'end'=>$end
-            ])->with('warning', 'Purchase model not found. Create Purchase/PurchaseItem models to enable this report.');
+                'start' => $start,
+                'end' => $end
+            ]);
         }
 
+        // If we get here, the table exists and we can query it
         $purchases = Purchase::with('items.product')
             ->whereBetween('created_at', ["{$start} 00:00:00", "{$end} 23:59:59"])
             ->get();
@@ -136,13 +147,16 @@ class ReportController extends Controller
         $total = $purchases->sum('total');
 
         $period = new \DatePeriod(new \DateTime($start), new \DateInterval('P1D'), (new \DateTime($end))->modify('+1 day'));
-        $labels=[]; $data=[];
+        $labels = []; 
+        $data = [];
+        
         foreach($period as $d){
-            $labels[] = $d->format('Y-m-d');
-            $data[] = (float) Purchase::whereDate('created_at',$d->format('Y-m-d'))->sum('total');
+            $day = $d->format('Y-m-d');
+            $labels[] = $day;
+            $data[] = (float) Purchase::whereDate('created_at', $day)->sum('total');
         }
 
-        return view('reports.purchases', compact('purchases','total','labels','data','start','end'));
+        return view('reports.purchases', compact('purchases', 'total', 'labels', 'data', 'start', 'end'));
     }
 
     public function exportPurchasesExcel(Request $request)

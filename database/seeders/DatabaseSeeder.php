@@ -27,16 +27,14 @@ class DatabaseSeeder extends Seeder
         'role'=> 'admin'
     ]);
 
-    $cat = Category::create(['name'=>'Analgesics','description'=>'Pain killers']);
-    $sup = \App\Models\Supplier::create(['name'=>'Pharma Supplier','phone'=>'024xxxxxxx']);
-    Product::create([
-        'sku'=>'PARA-500',
-        'name'=>'Paracetamol 500mg',
-        'category_id'=>$cat->id,
-        'supplier_id'=>$sup->id,
-        'cost_price'=>10,
-        'selling_price'=>15,
-        'reorder_level'=>10
+    // Seed permissions
+    $this->call([
+        \Database\Seeders\PermissionSeeder::class,
+    ]);
+
+    // Seed products with categories and suppliers
+    $this->call([
+        \Database\Seeders\ProductSeeder::class,
     ]);
     }
 }

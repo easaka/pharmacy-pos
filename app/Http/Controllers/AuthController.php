@@ -11,23 +11,27 @@ class AuthController extends Controller
 {
      public function registerWeb(Request $request)
     {
+        // Only admins can register new users
+        if (!Auth::check() || !Auth::user()->isAdmin()) {
+            abort(403, 'Only administrators can register new users.');
+        }
+
         $fields = $request->validate([
             'name' => 'required|string',
             'email' => 'required|string|unique:users,email',
             'password' => 'required|string|confirmed',
+            'role' => 'required|string|in:admin,cashier,pharmacist',
         ]);
 
         $user = User::create([
             'name' => $fields['name'],
             'email' => $fields['email'],
             'password' => Hash::make($fields['password']),
-            'role' => 'cashier', // Add default role
+            'role' => $fields['role'],
         ]);
 
-        // Login the user after registration (web session)
-        Auth::login($user);
-
-        return redirect('/dashboard');
+        return redirect()->route('users.index')
+            ->with('success', 'User registered successfully.');
     }
 
     public function loginWeb(Request $request)
@@ -55,6 +59,6 @@ class AuthController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
         
-        return redirect('/login');
+        return redirect()->route('login');
     }
 }

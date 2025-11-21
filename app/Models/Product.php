@@ -10,6 +10,16 @@ class Product extends Model
 {
     use HasFactory;
 
+    public function purchases()
+    {
+        return $this->hasMany(PurchaseItem::class);
+    }
+
+    public function sales()
+    {
+        return $this->hasMany(SaleItem::class);
+    }
+
     protected $fillable = [
         'sku','name','category_id','supplier_id','cost_price','selling_price','reorder_level','description'
     ];
@@ -23,6 +33,15 @@ class Product extends Model
         // simple current stock: sum of in - sum of out
         $in = $this->stockEntries()->where('type','in')->sum('quantity');
         $out = $this->stockEntries()->where('type','out')->sum('quantity');
-        return $in - $out;
+        return max(0, $in - $out); // Ensure non-negative
     }
+
+    /**
+     * Accessor for current_stock attribute
+     */
+    public function getCurrentStockAttribute()
+    {
+        return $this->currentStock();
+    }
+
 }

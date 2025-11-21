@@ -1,46 +1,66 @@
 <x-layout title="Reports Dashboard">
 
-<div class="max-w-7xl mx-auto">
-    <h1 class="text-3xl font-bold mb-6">Financial Reports Dashboard</h1>
+<div class="max-w-7xl mx-auto py-8">
 
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <!-- Page Title -->
+    <h1 class="text-4xl font-semibold text-gray-800 mb-8">
+        Financial Reports Dashboard
+    </h1>
 
-        <a href="{{ route('reports.sales') }}" class="p-6 bg-white shadow rounded-lg hover:bg-blue-50">
-            <h3 class="font-bold text-xl mb-2">Sales Report</h3>
-            <p class="text-gray-600">Daily, Monthly & Custom Range Sales</p>
+    <!-- Reports Grid -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+
+        <!-- Sales Report -->
+        <a href="{{ route('reports.sales') }}"
+           class="p-6 bg-white border border-gray-200 rounded-xl shadow hover:shadow-lg hover:-translate-y-1 hover:bg-blue-50 transition duration-200">
+            <h3 class="font-semibold text-xl text-gray-800">Sales Report</h3>
+            <p class="text-gray-600 mt-2">Daily, Monthly & Custom Range Sales</p>
         </a>
 
-        <a href="{{ route('reports.purchases') }}" class="p-6 bg-white shadow rounded-lg hover:bg-green-50">
-            <h3 class="font-bold text-xl mb-2">Purchases Report</h3>
-            <p class="text-gray-600">Track cost of goods purchased</p>
+        <!-- Purchases -->
+        <a href="{{ route('reports.purchases') }}"
+           class="p-6 bg-white border border-gray-200 rounded-xl shadow hover:shadow-lg hover:-translate-y-1 hover:bg-green-50 transition duration-200">
+            <h3 class="font-semibold text-xl text-gray-800">Purchases Report</h3>
+            <p class="text-gray-600 mt-2">Track cost of goods purchased</p>
         </a>
 
-        <a href="{{ route('reports.fastmoving') }}" class="p-6 bg-white shadow rounded-lg hover:bg-yellow-50">
-            <h3 class="font-bold text-xl mb-2">Fast Moving Products</h3>
-            <p class="text-gray-600">Top selling items</p>
+        <!-- Fast Moving -->
+        <a href="{{ route('reports.fastmoving') }}"
+           class="p-6 bg-white border border-gray-200 rounded-xl shadow hover:shadow-lg hover:-translate-y-1 hover:bg-yellow-50 transition duration-200">
+            <h3 class="font-semibold text-xl text-gray-800">Fast Moving Products</h3>
+            <p class="text-gray-600 mt-2">Top selling items</p>
         </a>
 
-        <a href="{{ route('reports.profitloss') }}" class="p-6 bg-white shadow rounded-lg hover:bg-purple-50">
-            <h3 class="font-bold text-xl mb-2">Profit & Loss</h3>
-            <p class="text-gray-600">Revenue, COGS, Net Profit</p>
+        <!-- Profit & Loss -->
+        <a href="{{ route('reports.profitloss') }}"
+           class="p-6 bg-white border border-gray-200 rounded-xl shadow hover:shadow-lg hover:-translate-y-1 hover:bg-purple-50 transition duration-200">
+            <h3 class="font-semibold text-xl text-gray-800">Profit & Loss</h3>
+            <p class="text-gray-600 mt-2">Revenue, COGS, Net Profit</p>
         </a>
 
-        <a href="{{ route('reports.stockvaluation') }}" class="p-6 bg-white shadow rounded-lg hover:bg-indigo-50">
-            <h3 class="font-bold text-xl mb-2">Stock Valuation</h3>
-            <p class="text-gray-600">Inventory worth by cost price</p>
+        <!-- Stock Valuation -->
+        <a href="{{ route('reports.stockvaluation') }}"
+           class="p-6 bg-white border border-gray-200 rounded-xl shadow hover:shadow-lg hover:-translate-y-1 hover:bg-indigo-50 transition duration-200">
+            <h3 class="font-semibold text-xl text-gray-800">Stock Valuation</h3>
+            <p class="text-gray-600 mt-2">Inventory worth by cost price</p>
         </a>
 
-        <a href="{{ route('reports.expiry') }}" class="p-6 bg-white shadow rounded-lg hover:bg-red-50">
-            <h3 class="font-bold text-xl mb-2">Expiry Report</h3>
-            <p class="text-gray-600">Items expiring soon</p>
+        <!-- Expiry Report -->
+        <a href="{{ route('reports.expiry') }}"
+           class="p-6 bg-white border border-gray-200 rounded-xl shadow hover:shadow-lg hover:-translate-y-1 hover:bg-red-50 transition duration-200">
+            <h3 class="font-semibold text-xl text-gray-800">Expiry Report</h3>
+            <p class="text-gray-600 mt-2">Items expiring soon</p>
         </a>
 
-        <a href="{{ route('reports.lowstock') }}" class="p-6 bg-white shadow rounded-lg hover:bg-gray-100">
-            <h3 class="font-bold text-xl mb-2">Low Stock</h3>
-            <p class="text-gray-600">Products needing restocking</p>
+        <!-- Low Stock -->
+        <a href="{{ route('reports.lowstock') }}"
+           class="p-6 bg-white border border-gray-200 rounded-xl shadow hover:shadow-lg hover:-translate-y-1 hover:bg-gray-100 transition duration-200">
+            <h3 class="font-semibold text-xl text-gray-800">Low Stock</h3>
+            <p class="text-gray-600 mt-2">Products needing restocking</p>
         </a>
 
     </div>
+
 </div>
 
 </x-layout>
