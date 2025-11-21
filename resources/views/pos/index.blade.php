@@ -1,5 +1,5 @@
 <x-layout title="Point of Sale">
-<div class="max-w-7xl mx-auto">
+<div class="max-w-7xl mx-auto py-4">
 
     @if(session('success'))
         <div class="bg-green-100 text-green-700 p-3 rounded mb-4">{{ session('success') }}</div>
@@ -11,14 +11,44 @@
         <div class="md:col-span-2 bg-white p-4 rounded shadow h-[70vh] overflow-auto">
             <h3 class="font-bold mb-3">Products</h3>
 
-            <div class="grid grid-cols-3 gap-3">
+            <!-- Search, Category, Barcode -->
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-3 gap-2">
+                <!-- Search -->
+                <input
+                    type="text"
+                    id="productSearch"
+                    placeholder="Search by name, SKU or barcode..."
+                    class="flex-1 p-2 border rounded"
+                />
+
+                <!-- Category Filter -->
+                <select id="categoryFilter" class="p-2 border rounded">
+                    <option value="">All Categories</option>
+                    @foreach($categories as $cat)
+                        <option value="{{ $cat->id }}">{{ $cat->name }}</option>
+                    @endforeach
+                </select>
+
+                <!-- Barcode Input -->
+                <input
+                    type="text"
+                    id="barcodeInput"
+                    placeholder="Scan or type barcode..."
+                    class="p-2 border rounded w-48"
+                />
+            </div>
+
+            <div class="grid grid-cols-3 gap-3" id="productsGrid">
                 @foreach($products as $p)
                     <button
                         class="product-card border p-3 text-left rounded hover:bg-gray-50"
                         data-id="{{ $p->id }}"
                         data-name="{{ $p->name }}"
                         data-price="{{ $p->selling_price }}"
-                        >
+                        data-sku="{{ $p->sku }}"
+                        data-category="{{ $p->category_id ?? '' }}"
+                        data-barcode="{{ $p->barcode ?? '' }}"
+                    >
                         <div class="font-semibold">{{ $p->name }}</div>
                         <div class="text-sm text-gray-600">{{ $p->sku }}</div>
                         <div class="text-sm mt-2">GHS {{ number_format($p->selling_price,2) }}</div>
@@ -61,10 +91,17 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function(){
+
     const cart = [];
     const cartItemsEl = document.getElementById('cartItems');
     const form = document.getElementById('checkoutForm');
 
+    const searchInput = document.getElementById('productSearch');
+    const categoryFilter = document.getElementById('categoryFilter');
+    const barcodeInput = document.getElementById('barcodeInput');
+    const productButtons = document.querySelectorAll('.product-card');
+
+    // --- RENDER CART ---
     function renderCart(){
         cartItemsEl.innerHTML = '';
         if(cart.length === 0){
@@ -77,7 +114,7 @@ document.addEventListener('DOMContentLoaded', function(){
             row.innerHTML = `
                 <div>
                     <div class="font-semibold">${it.name}</div>
-                    <div class="text-sm text-gray-600">GHS ${parseFloat(it.price).toFixed(2)}</div>
+                    <div class="text-sm text-gray-600">GHS ${(it.price).toFixed(2)}</div>
                 </div>
                 <div class="flex items-center gap-2">
                     <input type="number" min="1" value="${it.qty}" data-idx="${idx}" class="qty-input w-16 p-1 border rounded" />
@@ -90,42 +127,81 @@ document.addEventListener('DOMContentLoaded', function(){
             cartItemsEl.appendChild(row);
         });
 
-        // rebind events
+        // Rebind qty input
         document.querySelectorAll('.qty-input').forEach(inp=>{
             inp.onchange = function(){
                 const idx = this.dataset.idx;
                 cart[idx].qty = parseInt(this.value) || 1;
-                updateHiddenInputs();
                 renderCart();
             };
         });
+
+        // Rebind remove buttons
         document.querySelectorAll('.remove-btn').forEach(btn=>{
             btn.onclick = function(){
                 cart.splice(this.dataset.idx,1);
-                updateHiddenInputs();
                 renderCart();
             };
         });
     }
 
-    function updateHiddenInputs(){
-        // Rebuild hidden inputs so form fields names are sequential
-        // We'll re-render each cart item so inputs include correct indexes.
+    // --- ADD PRODUCT TO CART ---
+    function addToCart(product){
+        const existing = cart.find(c => c.id == product.id);
+        if(existing) existing.qty += 1;
+        else cart.push({...product, qty: 1});
+        renderCart();
     }
 
-    document.querySelectorAll('.product-card').forEach(btn=>{
+    productButtons.forEach(btn=>{
         btn.onclick = function(){
-            const id = this.dataset.id;
-            const name = this.dataset.name;
-            const price = parseFloat(this.dataset.price);
-            const existing = cart.find(c => c.id == id);
-            if(existing) existing.qty += 1;
-            else cart.push({ id, name, price, qty: 1 });
-            renderCart();
+            addToCart({
+                id: this.dataset.id,
+                name: this.dataset.name,
+                price: parseFloat(this.dataset.price)
+            });
         };
     });
 
-    // on submit: ensure hidden inputs align with indexes
+    // --- FILTER PRODUCTS ---
+    function filterProducts(){
+        const query = searchInput.value.toLowerCase();
+        const category = categoryFilter.value;
+
+        productButtons.forEach(btn => {
+            const name = btn.dataset.name.toLowerCase();
+            const sku = btn.dataset.sku.toLowerCase();
+            const barcode = (btn.dataset.barcode || '').toLowerCase();
+            const btnCategory = btn.dataset.category;
+
+            const matchesSearch = name.includes(query) || sku.includes(query) || barcode.includes(query);
+            const matchesCategory = category === "" || btnCategory === category;
+
+            btn.style.display = (matchesSearch && matchesCategory) ? "" : "none";
+        });
+    }
+
+    searchInput.addEventListener('input', filterProducts);
+    categoryFilter.addEventListener('change', filterProducts);
+
+    // --- BARCODE INPUT ---
+    barcodeInput.addEventListener('keypress', function(e){
+        if(e.key === 'Enter'){
+            e.preventDefault();
+            const code = this.value.trim().toLowerCase();
+            const productBtn = Array.from(productButtons).find(btn=>{
+                return btn.dataset.barcode.toLowerCase() === code || btn.dataset.sku.toLowerCase() === code;
+            });
+            if(productBtn){
+                productBtn.click();
+                this.value = '';
+            } else {
+                alert('Product not found');
+            }
+        }
+    });
+
+    // --- FORM SUBMIT ---
     form.addEventListener('submit', function(e){
         if(cart.length === 0){
             e.preventDefault();
@@ -133,7 +209,7 @@ document.addEventListener('DOMContentLoaded', function(){
             return;
         }
 
-        // Remove any existing hidden inputs first
+        // Remove existing hidden inputs first
         document.querySelectorAll('input[name^="items"]').forEach(el => el.remove());
 
         cart.forEach((it, idx)=>{
@@ -154,3 +230,4 @@ document.addEventListener('DOMContentLoaded', function(){
 });
 </script>
 </x-layout>
+    

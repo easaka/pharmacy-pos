@@ -7,6 +7,7 @@ use App\Models\Product;
 use App\Models\Sale;
 use App\Models\SaleItem;
 use App\Models\StockEntry;
+use App\Models\Category;
 use Illuminate\Support\Facades\DB;
 
 class POSWebController extends Controller
@@ -14,7 +15,8 @@ class POSWebController extends Controller
     public function index()
     {
         $products = Product::with('category')->get();
-        return view('pos.index', compact('products'));
+        $categories = Category::all();
+        return view('pos.index', compact('products', 'categories'));
     }
 
     // This endpoint will be used by form submit (server-side) to process sale
